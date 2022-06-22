@@ -49,12 +49,14 @@
             document.getElementById('lat').textContent = lat;
             document.getElementById('long').textContent = long;
             if (first_time) {
-                mymap.setView([lat, long], 3);
+                mymap.setView([lat, long], 4);
                 first_time = false;
             }
             marker.setLatLng([lat, long]);
+            return({lat,long});
         }
 
+        marker.bindPopup("Current location of ISS");
         setInterval(getISS, 1000);
 
 
