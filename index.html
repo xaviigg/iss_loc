@@ -12,13 +12,16 @@
         integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
         crossorigin=""></script>
     <link href="StyleSheet.css" rel="stylesheet">
+    <script src=" https://unpkg.com/@joergdietrich/leaflet.terminator@1.0.0/L.Terminator.js"></script>
     <title>ISS tracker!</title>
 </head>
 
 <body>
     <h1>Where is the ISS?</h1>
-    <p>Latitude: <span id="lat"></span><br />
-        Longitude: <span id="long"></span>
+    <p>Latitude: <span id="lat"></span>°<br />
+        Longitude: <span id="long"></span>°<br />
+        Altitude: <span id="alt"></span> km<br />
+        Visibility: <span id="vis"></span>
     </p>
 
     <div id="issMap"></div>
@@ -26,11 +29,11 @@
     <script>
 
         //Create the map
-        const mymap = L.map('issMap').setView([0, 0], 1);
+        const mymap = L.map('issMap').setView([0, 0], 3);
         const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">Openstreetmap</a> contributors';
         const tileURL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         L.tileLayer(tileURL, { attribution }).addTo(mymap);
-
+        L.terminator().addTo(mymap);
         //Customize marker
         var myIcon = L.icon({
             iconUrl: 'iss.png',
@@ -38,7 +41,7 @@
             iconAnchor: [25, 16]
         });
         const marker = L.marker([0, 0], { icon: myIcon }).addTo(mymap);
-        var first_time = true;
+        let first_time = true;
         //Retrieve iss location from API
         const api_url = 'https://api.wheretheiss.at/v1/satellites/25544';
         async function getISS() {
@@ -46,18 +49,26 @@
             const data = await response.json();
             const lat = data.latitude.toFixed(2);
             const long = data.longitude.toFixed(2);
+            const alti = data.altitude.toFixed(2);
+            const vis = data.visibility;
             document.getElementById('lat').textContent = lat;
             document.getElementById('long').textContent = long;
+            document.getElementById('alt').textContent = alti;
+            if(vis == "eclipsed"){
+                document.getElementById('vis').textContent = "Eclipsed 🌙";
+            }else{
+                document.getElementById('vis').textContent = "At daylight ☀️";
+            }
             if (first_time) {
                 mymap.setView([lat, long], 4);
                 first_time = false;
             }
             marker.setLatLng([lat, long]);
-            return({lat,long});
         }
 
-        marker.bindPopup("Current location of ISS");
-        setInterval(getISS, 1000);
+        getISS();
+        marker.bindPopup("ISS");
+        setInterval(getISS, 2000);
 
 
     </script>
